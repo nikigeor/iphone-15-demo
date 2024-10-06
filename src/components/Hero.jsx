@@ -5,7 +5,8 @@ import { useState, useEffect } from "react";
 
 const Hero = () => {
     const [videoSrc, setVideoSrc ] = useState(window.innerWidth < 760 ? smallHeroVideo : heroVideo)
-    const [count, setCount] = useState(2);
+    const [count, setCount] = useState(0);
+    const [hasStarted, setHasStarted] = useState(false);
     const handleVideoSrcSet = () => {
         if(window.innerWidth < 760) {
             setVideoSrc(smallHeroVideo)
@@ -15,12 +16,28 @@ const Hero = () => {
     }
 
     useEffect(() => {
-        console.log('hello', count)
+        const initialDelay = setTimeout(() => {
+          setHasStarted(true); 
+        }, 1200); 
+        return () => clearTimeout(initialDelay); // Cleanup timeout on unmount
+  }, []);
+    
+
+    useEffect(() => {
+        if(hasStarted && count < 15) {
+            const timer = setTimeout(() => {
+                setCount(count + 1);
+            }, 100)
+            return () => clearTimeout(timer);
+        }
+    }, [hasStarted, count])
+
+    useEffect(() => {
         window.addEventListener('resize', handleVideoSrcSet);
         return () => {
             window.removeEventListener('resize', handleVideoSrcSet)
         }
-    }, [count])
+    },[])
     
     useGSAP(() => {
         gsap.to('#hero', { opacity: 1, delay: 2 })
@@ -29,7 +46,7 @@ const Hero = () => {
     return (
         <section className="w-full nav-height bg-black relative">
             <div className="h-5/6 w-full flex-center flex-col">
-                <p id="hero" className="hero-title" onClick={() => setCount(i => i+1)}>iPhone {count} Pro</p>
+                <p id="hero" className="hero-title">iPhone {count} Pro</p>
                 <div className="md:w-10/12 w-9/12">
                     <video className="pointer-events-none" autoPlay muted playsInline={true} key={videoSrc}>
                         <source src={videoSrc} type="video/mp4"></source>
